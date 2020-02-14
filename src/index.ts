@@ -25,7 +25,7 @@ const action = async (context: any): Promise<void> => {
 
     ({access_token} = JSON.parse(response.body));
   }
-  catch (err) {
+  catch {
     context.notify('There was a problem authenticating your account. Is your API info up to date?');
     context.cancel();
     return;
@@ -43,7 +43,7 @@ const action = async (context: any): Promise<void> => {
 
     ({gfyname} = JSON.parse(response.body));
   }
-  catch (err) {
+  catch {
     context.notify('There was a problem communicating with gfycat ☹️');
     context.cancel();
     return;
@@ -60,7 +60,7 @@ const action = async (context: any): Promise<void> => {
     });
     context.notify('Upload complete. Waiting for gfycat to process the recording… ⏱');
   }
-  catch (err) {
+  catch {
     context.notify('There was a problem uploading the recording');
     context.cancel();
     return;
@@ -89,13 +89,13 @@ const action = async (context: any): Promise<void> => {
       }
       case 'encoding': {
         context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-        context.notify('gfycat is still processing the upload, but its URL has been copied to the clipboard anyway.');
+        context.notify('gfycat is still processing the upload, but its URL has been copied to the clipboard anyway');
         return;
       }
       default: throw new Error();
     }
   }
-  catch (err) {
+  catch {
     context.copyToClipboard(`https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
     context.notify(`There was a problem processing the uploaded file. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
     context.cancel();
@@ -106,13 +106,15 @@ const config = {
   clientId: {
     default: '',
     required: true,
-    title: 'client_id / API key',
+    title: 'API Key',
+    description: 'This is your `client_id`.',
     type: 'string',
   },
   clientSecret: {
     default: '',
     required: true,
-    title: 'client_secret',
+    title: 'API Secret',
+    description: 'This is your `client_secret`.',
     type: 'string',
   },
 };
@@ -120,7 +122,7 @@ const config = {
 const gfycat = {
   action,
   config,
-  configDescription: 'You can get the required information at https://developers.gfycat.com/signup/#/apiform',
+  configDescription: 'You can sign up for an API key at https://developers.gfycat.com/signup/#/apiform and find more info about the API at https://developers.gfycat.com/api/#authentication.',
   formats: [Formats.GIF, Formats.MP4],
   title: 'Share to gfycat',
 };
