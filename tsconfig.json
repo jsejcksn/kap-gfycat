@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "declaration": true,
+    "declaration": false,
     "module": "CommonJS",
     "noImplicitAny": true,
     "noImplicitReturns": true,

@@ -1,5 +1,12 @@
 import * as fs from 'fs';
 
+enum Formats {
+  APNG = 'apng',
+  GIF = 'gif',
+  MP4 = 'mp4',
+  WEBM = 'webm',
+}
+
 const action = async (context: any): Promise<void> => {
   context.setProgress('Authenticating…');
   let access_token: string;
@@ -42,9 +49,7 @@ const action = async (context: any): Promise<void> => {
     return;
   }
 
-  context.setProgress('Converting to GIF format…');
   const filePath = await context.filePath();
-
   context.setProgress('Uploading…');
 
   try {
@@ -53,6 +58,7 @@ const action = async (context: any): Promise<void> => {
       body: fs.createReadStream(filePath),
       method: 'put',
     });
+    context.notify('Upload complete. Waiting for gfycat to process the recording… ⏱');
   }
   catch (err) {
     context.notify('There was a problem uploading the recording');
@@ -60,39 +66,39 @@ const action = async (context: any): Promise<void> => {
     return;
   }
 
-  context.setProgress('Processing…');
+  context.setProgress('Processing on gfycat…');
 
   try {
     const wait = (ms: number): Promise<undefined> => new Promise(res => setTimeout(res, ms));
     const msPerS = 1000;
-    const timeoutSeconds = 30;
+    const timeoutSeconds = 60;
     const timeout = Date.now() + (msPerS * timeoutSeconds);
     let task = 'encoding';
     while (task === 'encoding' && Date.now() < timeout) {
-      const retrySeconds = 2;
+      const retrySeconds = 4;
       await wait(msPerS * retrySeconds);
       const endpoint = `https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`;
       const response = await context.request(endpoint);
       ({task} = JSON.parse(response.body));
     }
-    if (task !== 'complete') {
-      if (task === 'encoding') {
+    switch (task) {
+      case 'complete': {
         context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-        context.notify(`Processing hasn't completed yet, but the URL to the GIF has been copied to the clipboard. View the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
-        context.cancel();
+        context.notify('The URL to the upload has been copied to the clipboard');
+        break;
+      }
+      case 'encoding': {
+        context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
+        context.notify(`gfycat is still processing, but the URL to the upload has been copied to the clipboard anyway. Status: https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
         return;
       }
-      throw new Error();
+      default: throw new Error();
     }
   }
   catch (err) {
-    context.notify(`There was a problem processing the GIF. You can view the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
+    context.notify(`There was a problem processing the GIF. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
     context.cancel();
-    return;
   }
-
-  context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-  context.notify('URL to the GIF has been copied to the clipboard');
 };
 
 const config = {
@@ -113,8 +119,8 @@ const config = {
 const gfycat = {
   action,
   config,
-  configDescription: 'You can get the required information for your own account at https://developers.gfycat.com/signup/#/apiform',
-  formats: ['gif'],
+  configDescription: 'You can get the required information at https://developers.gfycat.com/signup/#/apiform',
+  formats: [Formats.GIF, Formats.MP4],
   title: 'Share to gfycat',
 };
 
