@@ -89,14 +89,15 @@ const action = async (context: any): Promise<void> => {
       }
       case 'encoding': {
         context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-        context.notify(`gfycat is still processing, but the URL to the upload has been copied to the clipboard anyway. Status: https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
+        context.notify('gfycat is still processing the upload, but its URL has been copied to the clipboard anyway.');
         return;
       }
       default: throw new Error();
     }
   }
   catch (err) {
-    context.notify(`There was a problem processing the GIF. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
+    context.copyToClipboard(`https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
+    context.notify(`There was a problem processing the uploaded file. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
     context.cancel();
   }
 };
