@@ -1,33 +1,42 @@
 {
-	"name": "kap-giphy",
-	"version": "0.1.0",
-	"description": "Share GIFs on GIPHY",
-	"license": "MIT",
-	"repository": "wulkano/kap-giphy",
-	"author": {
-		"name": "Wulkano",
-		"email": "hello@wulkano.com",
-		"url": "https://wulkano.com"
-	},
+	"name": "kap-gfycat",
+	"version": "1.0.0",
+	"description": "Share GIFs on gfycat",
+	"type": "commonjs",
+	"main": "dist/index.js",
+	"files": [
+		"dist/**/*"
+	],
 	"scripts": {
+		"build": "tsc",
 		"test": "xo && ava"
 	},
-	"files": [
-		"index.js"
-	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jsejcksn/kap-gfycat.git"
+	},
 	"keywords": [
 		"kap-plugin",
-		"giphy",
+		"gfycat",
 		"gif",
 		"upload",
 		"share"
 	],
-	"dependencies": {
-		"form-data": "^2.1.4"
+	"author": "Jesse Jackson <npm@jcksn.org> (https://jcksn.org)",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/jsejcksn/kap-gfycat/issues"
 	},
+	"homepage": "https://github.com/jsejcksn/kap-gfycat#readme",
 	"devDependencies": {
+		"@jsejcksn/eslint-config": "^3.0.0",
+		"@typescript-eslint/eslint-plugin": "^2.19.2",
+		"@typescript-eslint/parser": "^2.19.2",
 		"ava": "^2.3.0",
+		"eslint": "^6.8.0",
+		"got": "^10.5.5",
 		"kap-plugin-test": "^0.5.0",
+		"typescript": "^3.7.5",
 		"xo": "^0.24.0"
 	}
 }

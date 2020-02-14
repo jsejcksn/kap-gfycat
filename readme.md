@@ -1,6 +1,6 @@
-# kap-giphy [![Build Status](https://travis-ci.org/wulkano/kap-giphy.svg?branch=master)](https://travis-ci.org/wulkano/kap-giphy)
+# kap-gfycat
 
-> [Kap](https://github.com/wulkano/kap) plugin - Share GIFs on [GIPHY](https://giphy.com)
+> [Kap](https://github.com/wulkano/kap) plugin - Share GIFs on [gfycat](https://gfycat.com)
 
 
 ## Install
@@ -10,4 +10,4 @@ In the `Kap` menu, go to `Preferences…`, select the `Plugins` pane, find this 
 
 ## Usage
 
-In the editor, after recording, select `GIF`, and then `Share on GIPHY`.
+In the editor, after recording, select `GIF`, and then `Share on gfycat`.
