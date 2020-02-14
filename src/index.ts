@@ -58,7 +58,9 @@ const action = async (context: any): Promise<void> => {
       body: fs.createReadStream(filePath),
       method: 'put',
     });
-    context.notify('Upload complete. Waiting for gfycat to process the recording… ⏱');
+    context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
+    context.notify('The URL to the upload has been copied to the clipboard');
+    context.notify('But gfycat is still processing the upload… ⏱');
   }
   catch (err) {
     context.notify('There was a problem uploading the recording');
@@ -71,7 +73,7 @@ const action = async (context: any): Promise<void> => {
   try {
     const wait = (ms: number): Promise<undefined> => new Promise(res => setTimeout(res, ms));
     const msPerS = 1000;
-    const timeoutSeconds = 60;
+    const timeoutSeconds = 120;
     const timeout = Date.now() + (msPerS * timeoutSeconds);
     let task = 'encoding';
     while (task === 'encoding' && Date.now() < timeout) {
@@ -83,13 +85,12 @@ const action = async (context: any): Promise<void> => {
     }
     switch (task) {
       case 'complete': {
-        context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-        context.notify('The URL to the upload has been copied to the clipboard');
+        context.notify('gfycat has finished processing the upload');
         break;
       }
       case 'encoding': {
-        context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
-        context.notify('gfycat is still processing the upload, but its URL has been copied to the clipboard anyway.');
+        context.notify(`gfycat has taken longer than ${timeoutSeconds} seconds to process the upload`);
+        context.notify(`See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
         return;
       }
       default: throw new Error();
