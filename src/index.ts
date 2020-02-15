@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import {GfycatApi} from './gfycat-api.js';
 
 enum Formats {
   APNG = 'apng',
@@ -8,26 +8,23 @@ enum Formats {
 }
 
 const action = async (context: any): Promise<void> => {
+  const notifyAndCancel = (notificationMessage: string): void => {
+    context.notify(notificationMessage);
+    context.cancel();
+  };
+
+  const gfycatApi = new GfycatApi(
+    context.config.get('clientId'),
+    context.config.get('clientSecret'),
+  );
+
   context.setProgress('Authenticating…');
-  let access_token: string;
 
   try {
-    const endpoint = 'https://api.gfycat.com/v1/oauth/token';
-    const response = await context.request(endpoint, {
-      body: JSON.stringify({
-        client_id: context.config.get('clientId'),
-        client_secret: context.config.get('clientSecret'),
-        grant_type: 'client_credentials',
-      }),
-      headers: {'Content-Type': 'application/json'},
-      method: 'post',
-    });
-
-    ({access_token} = JSON.parse(response.body));
+    await gfycatApi.authenticate();
   }
   catch {
-    context.notify('There was a problem authenticating your account. Is your API info up to date?');
-    context.cancel();
+    notifyAndCancel('There was a problem authenticating your account. Is your API info up to date?');
     return;
   }
 
@@ -35,17 +32,10 @@ const action = async (context: any): Promise<void> => {
   let gfyname: string;
 
   try {
-    const endpoint = 'https://api.gfycat.com/v1/gfycats';
-    const response = await context.request(endpoint, {
-      headers: {Authorization: `Bearer ${access_token}`},
-      method: 'post',
-    });
-
-    ({gfyname} = JSON.parse(response.body));
+    gfyname = await gfycatApi.getUploadId();
   }
   catch {
-    context.notify('There was a problem communicating with gfycat ☹️');
-    context.cancel();
+    notifyAndCancel('There was a problem communicating with gfycat ☹️');
     return;
   }
 
@@ -53,18 +43,13 @@ const action = async (context: any): Promise<void> => {
   context.setProgress('Uploading…');
 
   try {
-    const endpoint = `https://filedrop.gfycat.com/${gfyname}`;
-    await context.request(endpoint, {
-      body: fs.createReadStream(filePath),
-      method: 'put',
-    });
+    await gfycatApi.uploadFile(filePath);
     context.copyToClipboard(`https://gfycat.com/${gfyname.toLowerCase()}`);
     context.notify('The URL to the upload has been copied to the clipboard');
     context.notify('But gfycat is still processing the upload… ⏱');
   }
   catch {
-    context.notify('There was a problem uploading the recording');
-    context.cancel();
+    notifyAndCancel('There was a problem uploading the recording');
     return;
   }
 
@@ -74,14 +59,13 @@ const action = async (context: any): Promise<void> => {
     const wait = (ms: number): Promise<undefined> => new Promise(res => setTimeout(res, ms));
     const msPerS = 1000;
     const timeoutSeconds = 120;
-    const timeout = Date.now() + (msPerS * timeoutSeconds);
+    const unixTimeout = Date.now() + (msPerS * timeoutSeconds);
     let task = 'encoding';
-    while (task === 'encoding' && Date.now() < timeout) {
+    while (task === 'encoding' && Date.now() < unixTimeout) {
       const retrySeconds = 4;
       await wait(msPerS * retrySeconds);
-      const endpoint = `https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`;
-      const response = await context.request(endpoint);
-      ({task} = JSON.parse(response.body));
+      const status = await gfycatApi.checkUploadStatus();
+      ({task} = status);
     }
     switch (task) {
       case 'complete': {
@@ -98,8 +82,7 @@ const action = async (context: any): Promise<void> => {
   }
   catch {
     context.copyToClipboard(`https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
-    context.notify(`There was a problem processing the uploaded file. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
-    context.cancel();
+    notifyAndCancel(`There was a problem processing the uploaded file. See the status at https://api.gfycat.com/v1/gfycats/fetch/status/${gfyname}`);
   }
 };
 
@@ -120,12 +103,12 @@ const config = {
   },
 };
 
-const gfycat = {
-  action,
-  config,
-  configDescription: 'You can sign up for an API key at https://developers.gfycat.com/signup/#/apiform and find more info about the API at https://developers.gfycat.com/api/.',
-  formats: [Formats.GIF, Formats.MP4],
-  title: 'Share to gfycat',
-};
-
-export const shareServices = [gfycat];
+export const shareServices = [
+  {
+    action,
+    config,
+    configDescription: 'You can sign up for an API key at https://developers.gfycat.com/signup/#/apiform and find more info about the API at https://developers.gfycat.com/api/.',
+    formats: [Formats.GIF, Formats.MP4],
+    title: 'Share to gfycat',
+  },
+];

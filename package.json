@@ -36,10 +36,12 @@
 		"@typescript-eslint/parser": "^2.19.2",
 		"ava": "^2.3.0",
 		"eslint": "^6.8.0",
-		"got": "^10.5.5",
 		"kap-plugin-test": "^0.5.0",
 		"terser": "^4.6.3",
 		"typescript": "^3.7.5",
 		"xo": "^0.24.0"
+	},
+	"dependencies": {
+		"got": "^10.5.5"
 	}
 }
