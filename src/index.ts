@@ -106,16 +106,16 @@ const action = async (context: any): Promise<void> => {
 const config = {
   clientId: {
     default: '',
+    description: 'This is your `client_id`.',
     required: true,
     title: 'API Key',
-    description: 'This is your `client_id`.',
     type: 'string',
   },
   clientSecret: {
     default: '',
+    description: 'This is your `client_secret`.',
     required: true,
     title: 'API Secret',
-    description: 'This is your `client_secret`.',
     type: 'string',
   },
 };
