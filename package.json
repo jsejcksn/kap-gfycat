@@ -1,6 +1,6 @@
 {
 	"name": "kap-gfycat",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "Share GIFs on gfycat",
 	"type": "commonjs",
 	"main": "dist/index.js",
