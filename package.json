@@ -10,7 +10,7 @@
 	"scripts": {
 		"build": "npm run build:1 && npm run build:2",
 		"build:1": "tsc",
-		"build:2": "terser dist/index.js -cm -o dist/index.js",
+		"build:2": "terser dist/index.js -cm -o dist/index.js; terser dist/gfycat-api.js -cm -o dist/gfycat-api.js",
 		"test": "xo && ava"
 	},
 	"repository": {
