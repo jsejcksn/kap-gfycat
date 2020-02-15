@@ -10,4 +10,4 @@ In the `Kap` menu, go to `Preferences…`, select the `Plugins` pane, find this 
 
 ## Usage
 
-In the editor, after recording, select `GIF`, and then `Share on gfycat`.
+In the editor, after recording, select `MP4` or `GIF`, and then `Share on gfycat`.
