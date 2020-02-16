@@ -4,83 +4,76 @@ import * as fs from 'fs';
 import got from 'got';
 
 // https://developers.gfycat.com/api/#checking-the-status-of-your-upload
-class UploadResponses {
-  all:
-    | this['complete']
-    | this['duplicate']
-    | this['encoding']
-    | this['error']
-    | this['notFound'];
-
-  complete: {
-    gfyname: string;
-    task: 'complete';
-  }
-
-  duplicate: {
-    avgColor?: any;
-    createDate?: any;
-    description?: any;
-    dislikes?: any;
-    extraLemmas?: any;
-    frameRate?: any;
-    gfyId?: any;
-    gfyname?: any;
-    gfyName?: any;
-    gfyNumber?: any;
-    gifSize?: any;
-    gifUrl?: any;
-    height?: any;
-    languageCategories?: any;
-    likes?: any;
-    max2mbGif?: any;
-    max5mbGif?: any;
-    md5?: any;
-    md5Found: 1;
-    mobilePosterUrl?: any;
-    mobileUrl?: any;
-    mp4Size?: any;
-    mp4Url?: any;
-    nsfw?: any;
-    numFrames?: any;
-    posterUrl?: any;
-    published?: any;
-    source?: any;
-    tags?: any;
-    task?: any;
-    thumb100PosterUrl?: any;
-    title?: any;
-    userName?: any;
-    views?: any;
-    webmSize?: any;
-    webmUrl?: any;
-    width?: any;
-  }
-
-  encoding: {
-    task: 'encoding';
-    time: number;
-  }
-
-  error: {
-    errorMessage: {
-      code: string;
-      description: string;
-    };
-    task: 'error';
-  }
-
-  notFound: {
-    task: 'NotFoundo';
-    time: number;
-  }
-
-  unique:
-    | this['complete']
-    | this['encoding']
-    | this['error']
-    | this['notFound'];
+interface UploadResponseComplete {
+  gfyname: string;
+  task: 'complete';
 }
+
+interface UploadResponseEncoding {
+  task: 'encoding';
+  time: number;
+}
+
+interface UploadResponseError {
+  errorMessage: {
+    code: string;
+    description: string;
+  };
+  task: 'error';
+}
+
+interface UploadResponseNotFound {
+  task: 'NotFoundo';
+  time: number;
+}
+
+interface UploadResponseDuplicate {
+  avgColor?: any;
+  createDate?: any;
+  description?: any;
+  dislikes?: any;
+  extraLemmas?: any;
+  frameRate?: any;
+  gfyId?: any;
+  gfyname?: any;
+  gfyName?: any;
+  gfyNumber?: any;
+  gifSize?: any;
+  gifUrl?: any;
+  height?: any;
+  languageCategories?: any;
+  likes?: any;
+  max2mbGif?: any;
+  max5mbGif?: any;
+  md5?: any;
+  md5Found: 1;
+  mobilePosterUrl?: any;
+  mobileUrl?: any;
+  mp4Size?: any;
+  mp4Url?: any;
+  nsfw?: any;
+  numFrames?: any;
+  posterUrl?: any;
+  published?: any;
+  source?: any;
+  tags?: any;
+  task?: any;
+  thumb100PosterUrl?: any;
+  title?: any;
+  userName?: any;
+  views?: any;
+  webmSize?: any;
+  webmUrl?: any;
+  width?: any;
+}
+
+type UploadResponseUnique =
+  | UploadResponseComplete
+  | UploadResponseEncoding
+  | UploadResponseError
+  | UploadResponseNotFound;
+
+type UploadResponse = UploadResponseUnique | UploadResponseDuplicate;
 
 class GfycatApi {
   // https://github.com/typescript-eslint/typescript-eslint/issues/977
@@ -96,7 +89,7 @@ class GfycatApi {
     this.clientSecret = clientSecret;
   }
 
-  async authenticate (): Promise<string | never> {
+  async authenticate (): Promise<string> {
     const endpoint = 'https://api.gfycat.com/v1/oauth/token';
     const response = await got(endpoint, {
       body: JSON.stringify({
@@ -118,15 +111,15 @@ class GfycatApi {
     return this.accessToken;
   }
 
-  async checkUploadStatus (): Promise<UploadResponses['unique'] | never> {
+  async checkUploadStatus (): Promise<UploadResponseUnique> {
     const endpoint = `https://api.gfycat.com/v1/gfycats/fetch/status/${this.gfyname}`;
     const response = await got(endpoint);
-    const responseData: UploadResponses['all'] = JSON.parse(response.body);
+    const responseData: UploadResponse = JSON.parse(response.body);
     if (!responseData.task) throw new Error();
-    return responseData as UploadResponses['unique'];
+    return responseData as UploadResponseUnique;
   }
 
-  async getUploadId (): Promise<string | never> {
+  async getUploadId (): Promise<string> {
     const endpoint = 'https://api.gfycat.com/v1/gfycats';
     const response = await got(endpoint, {
       headers: {Authorization: `Bearer ${this.accessToken}`},
@@ -138,7 +131,7 @@ class GfycatApi {
     return this.gfyname;
   }
 
-  async uploadFile (filePath: fs.PathLike): Promise<void | never> {
+  async uploadFile (filePath: fs.PathLike): Promise<void> {
     const endpoint = `https://filedrop.gfycat.com/${this.gfyname}`;
     await got(endpoint, {
       body: fs.createReadStream(filePath),
